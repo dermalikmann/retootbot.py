@@ -1,3 +1,6 @@
-adreto
+bin/
+share/
+lib/
+include/
 user.secret
 app.secrets
