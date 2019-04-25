@@ -41,7 +41,6 @@ print('Storing last toot id...')
 f.close()
 f = open('users.txt', 'w')
 
-print(lastid)
 for user in lastid.keys():
     f.write(str(user) + ':' + str(lastid[user]) + '\r\n')
 
