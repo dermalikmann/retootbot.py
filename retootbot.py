@@ -10,6 +10,8 @@ mastodon = Mastodon(
 
 f = open('users.txt', 'r')
 
+print("Getting new toots... ", end='')
+
 toots = []
 lastid = {}
 for line in f:
@@ -23,12 +25,19 @@ for line in f:
 
 toots = sorted(toots, key=lambda toot: toot['created_at'].timestamp())
 
+print('Found: ' + str(len(toots)))
+print('')
+print('Retooting... ')
+
 for toot in toots:
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
         print(str(toot['id']) + ' by ' + toot['account']['username'])
     else:
+        print(str(toot['id']) + ' by ' + toot['account']['username'])
         mastodon.status_reblog(toot['id'])
 
+print('Done')
+print('Storing last toot id...')
 f.close()
 f = open('users.txt', 'w')
 
@@ -37,3 +46,7 @@ for user in lastid.keys():
     f.write(str(user) + ':' + str(lastid[user]) + '\r\n')
 
 f.close()
+
+
+print('Done')
+print('Bye bye!')
