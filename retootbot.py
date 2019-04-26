@@ -2,23 +2,21 @@ from mastodon import Mastodon
 from datetime import datetime
 from dateutil.tz import tzutc
 import sys
+import pickle
 
 mastodon = Mastodon(
     access_token = 'user.secret',
     api_base_url = 'https://machteburch.social'
 )
 
-f = open('users.txt', 'r')
+stored = pickle.load(open('users.pickle', 'rb'))
 
 print("Getting new toots... ", end='')
 
 toots = []
-lastid = {}
-for line in f:
-    user, lsid = line.split(':', 1)
-    lastid[user] = int(lsid)
+for user, lsid in stored.items():
     for rawtoot in reversed(mastodon.account_statuses(user, since_id=lsid)):
-        lastid[user] = rawtoot['id']
+        stored[user] = int(rawtoot['id'])
         if rawtoot['reblog'] == None:
             for tag in rawtoot['tags']:
                 if tag['name'] == 'mastoadmin': toots.append(rawtoot)
@@ -26,8 +24,7 @@ for line in f:
 toots = sorted(toots, key=lambda toot: toot['created_at'].timestamp())
 
 print('Found: ' + str(len(toots)))
-print('')
-print('Retooting... ')
+print('Retooting... ', end='')
 
 for toot in toots:
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
@@ -37,15 +34,9 @@ for toot in toots:
         mastodon.status_reblog(toot['id'])
 
 print('Done')
-print('Storing last toot id...')
-f.close()
-f = open('users.txt', 'w')
+print('Storing last toot id...', end='')
 
-for user in lastid.keys():
-    f.write(str(user) + ':' + str(lastid[user]) + '\r\n')
-
-f.close()
-
+pickle.dump(stored, open('users.pickle', 'wb'))
 
 print('Done')
 print('Bye bye!')
